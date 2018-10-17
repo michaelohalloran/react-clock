@@ -2,7 +2,10 @@ import React, { Component } from 'react';
 import './App.css';
 import Clock from './Clock';
 import Timer from './Timer';
+import TimerContainer from './TimerContainer';
 import Button from './Button';
+import Stopwatch from './Stopwatch';
+
 
 
 class App extends Component {
@@ -14,15 +17,16 @@ class App extends Component {
       currentTime: 0,
       loading: true,
       timerMins: '00',
-      timerSecs: '00'
+      timerSecs: '00',
+      startTimerFlag: false
     }
     this.getTime = this.getTime.bind(this);
     this.changeTimer = this.changeTimer.bind(this);
     this.formatTime = this.formatTime.bind(this);
     this.countdown = this.countdown.bind(this);
     this.startTimer = this.startTimer.bind(this);
-    // this.decreaseTime = this.decreaseTime.bind(this);
-    this.clearTimer = this.clearTimer.bind(this);
+    // this.decreaseSecs = this.decreaseSecs.bind(this);
+    this.resetTimer = this.resetTimer.bind(this);
   }
 
   //start interval to show time each second
@@ -32,6 +36,8 @@ class App extends Component {
     // });
     this.timer = setInterval(this.getTime, 1000);
   }
+
+  
 
   //clear timer when component unmounts
   componentWillUnmount() {
@@ -51,15 +57,17 @@ class App extends Component {
   //take in a time 0 or more, format with leading 0's
   //disallows negative time by sticking at 00 if decrementing from 00
   formatTime(preTime) {
-    return preTime >=0 ? preTime < 10 ? `0${preTime}` : preTime : `00`;
+    return preTime >=0 && preTime <=59 ? preTime < 10 ? `0${preTime}` : preTime : `00`;
   }
 
+  //Grabs button value and adds or subtracts mins/secs based on value
   changeTimer(e) {
-    // console.log(e.target.value);
+    console.log('inside changeTimer : ', e.target.value);
     // e.target.value == '+Mins' ? this.setState({timerMins: 3}) : console.log('null');
     switch(e.target.value) {
       case '+Mins':
         this.setState((prevState)=> {
+          //change timerMins to number before incrementing, format it correctly
           return {timerMins: this.formatTime(+prevState.timerMins+1)}
         });
         // console.log(e.target.value);
@@ -71,7 +79,16 @@ class App extends Component {
         break;
       case '+Secs':
         this.setState((prevState)=> {
-          return {timerSecs: this.formatTime(+prevState.timerSecs+1)}
+          //if at 59, add to mins also
+          if(prevState.timerSecs === '59') {
+            // console.log(`At secs 59, state is ${typeof prevState.timerSecs}`);
+            return {
+              timerMins: this.formatTime(+prevState.timerMins + 1),
+              timerSecs: this.formatTime(+prevState.timerSecs+1)
+            }
+          } else {
+            return {timerSecs: this.formatTime(+prevState.timerSecs + 1)}
+          } 
         });
         break;
       case '-Secs':
@@ -81,67 +98,88 @@ class App extends Component {
         break;
       default:
           console.log('unknown category');
+          return;
     } 
   }
 
+  
+
   countdown =()=> {
-    //decrement timerSecs
     this.setState(prevState=> {
-        console.log(prevState.timerSecs);
-        return {timerSecs: this.formatTime(+prevState.timerSecs - 1)}
+        //if secs aren't at 0, decrement them
+        if(prevState.timerSecs !== '00') {
+          return {
+            timerSecs: this.formatTime(+prevState.timerSecs - 1),
+          }
+        } else if (prevState.timerSecs === '00' && prevState.timerMins !== '00') {
+          //if timerSecs are at 00 but mins remain, mins go down 1 and secs go down to 59
+          return {
+            timerMins: this.formatTime(+prevState.timerMins - 1),
+            timerSecs: '59'
+          }
+        }
       });
-    // console.log('countdown this', this);
   }
+
 
   startTimer() {
     console.log('hit start timer');
-    // console.log('startTimer this ', this);
-    //take current time and start decrementing seconds every 1 second
-    //also decrement minutes every 60 seconds
-    // this.decreaseTime = setInterval(this.countdown,1000);
-    // return this.state.timerSecs > 0 ? this.decreaseTime : console.log('done'); 
-    // clearInterval(this.decreaseTime);
-    // console.log(this.state.timerSecs);
-    console.log(typeof this.state.timerSecs);
-    this.decreaseTime = setInterval(this.countdown,1000);
-    console.log(this.decreaseTime);
-    // return this.state.timerSecs === '00' ? this.clearTimer() : this.decreaseTime = setInterval(this.countdown,1000);
+    //tell app that timer has been started via a flag
+    this.setState({startTimerFlag: true});
+    //Every second, run countdown
+    this.decreaseSecs = setInterval(this.countdown,1000);
   }
 
-  
-  clearTimer() {
-    clearInterval(this.decreaseTime);
+
+  //clears the setInterval
+  stopCountdown = ()=> {
+    clearInterval(this.decreaseSecs);
   }
 
-  pauseTimer() {
+
+  //responds to pause btn press
+  pauseTimer = ()=> {
     console.log('hit pause');
+    this.stopCountdown();
   }
 
+  //stops count and resets state values
   resetTimer() {
     console.log('hit reset');
+    this.stopCountdown();
+    this.setState({
+      timerSecs: '00',
+      timerMins: '00',
+      startTimerFlag: false
+    });
   }
-  
 
   render() {
-    // let timeDisplay;
-    const {currentTime, loading, timerMins, timerSecs} = this.state;
-
-    // this.state.loading ? timeDisplay = <div>'Load'</div> : timeDisplay = this.state.currentTime;
+    const {currentTime, loading, timerMins, timerSecs, startTimerFlag} = this.state;
 
     return (
       <div>
         <h1 className="title">React Clock</h1>
         <Clock loading={loading} now={currentTime}/>
-        <Timer mins={timerMins} secs={timerSecs}/>
+        <TimerContainer 
+          time={{timerMins, timerSecs, startTimerFlag}}
+          changeTimer={this.changeTimer}
+          startTimer={this.startTimer}
+          pauseTimer={this.pauseTimer}
+          resetTimer={this.resetTimer}
+        />
+        <br />
 
-        <Button onClick={this.changeTimer} value="+Mins">
+        {/* <Timer time={{timerMins, timerSecs, startTimerFlag}}/> */}
+
+        {/* <Button onClick={this.changeTimer} value="+Mins">
             Add minutes
         </Button>
         <Button onClick={this.changeTimer} value="-Mins">
             Decrease minutes
         </Button>
         <Button onClick={this.changeTimer} value="+Secs">
-            Increase seconds
+            Add seconds
         </Button>
         <Button onClick={this.changeTimer} value="-Secs">
             Decrease seconds
@@ -154,7 +192,10 @@ class App extends Component {
         </Button>
         <Button onClick={this.resetTimer}>
             Reset Timer
-        </Button>
+        </Button> */}
+        <br />
+        <br />
+        <Stopwatch />
       </div>
     );
   }
