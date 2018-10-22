@@ -5,8 +5,7 @@ class Stopwatch extends Component {
     render() {
         return (
             <div>
-                <Button>Stopwatch</Button>
-                Stopwatch
+                SW Display
             </div>
         )
     }

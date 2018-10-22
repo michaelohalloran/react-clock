@@ -5,6 +5,8 @@ import Timer from './Timer';
 import TimerContainer from './TimerContainer';
 import Button from './Button';
 import Stopwatch from './Stopwatch';
+import StopwatchContainer from './StopwatchContainer';
+
 
 
 
@@ -18,7 +20,12 @@ class App extends Component {
       loading: true,
       timerMins: '00',
       timerSecs: '00',
-      startTimerFlag: false
+      startTimerFlag: false,
+      timerMsg: '',
+      swMins: '00',
+      swSecs: '00',
+      swMs: '00',
+      startSWFlag: false
     }
     this.getTime = this.getTime.bind(this);
     this.changeTimer = this.changeTimer.bind(this);
@@ -27,6 +34,7 @@ class App extends Component {
     this.startTimer = this.startTimer.bind(this);
     // this.decreaseSecs = this.decreaseSecs.bind(this);
     this.resetTimer = this.resetTimer.bind(this);
+    this.formatSWSecMin = this.formatSWSecMin.bind(this);
   }
 
   //start interval to show time each second
@@ -58,6 +66,10 @@ class App extends Component {
   //disallows negative time by sticking at 00 if decrementing from 00
   formatTime(preTime) {
     return preTime >=0 && preTime <=59 ? preTime < 10 ? `0${preTime}` : preTime : `00`;
+  }
+
+  formatSWSecMin() {
+
   }
 
   //Grabs button value and adds or subtracts mins/secs based on value
@@ -124,10 +136,16 @@ class App extends Component {
 
   startTimer() {
     console.log('hit start timer');
-    //tell app that timer has been started via a flag
-    this.setState({startTimerFlag: true});
-    //Every second, run countdown
-    this.decreaseSecs = setInterval(this.countdown,1000);
+    const {startTimerFlag, timerMins, timerSecs} = this.state;
+     //if timer isn't started and timer is at 0, tell them to add time before starting
+    if(!startTimerFlag && timerMins === '00' && timerSecs === '00') {
+      this.setState({timerMsg: 'You must add time before starting the timer'});
+    } else {
+      //tell app that timer has been started via a flag
+      this.setState({startTimerFlag: true});
+      //Every second, run countdown
+      this.decreaseSecs = setInterval(this.countdown,1000);
+    } 
   }
 
 
@@ -155,47 +173,25 @@ class App extends Component {
   }
 
   render() {
-    const {currentTime, loading, timerMins, timerSecs, startTimerFlag} = this.state;
+    const {currentTime, loading, timerMins, timerSecs, startTimerFlag, timerMsg} = this.state;
 
     return (
       <div>
         <h1 className="title">React Clock</h1>
         <Clock loading={loading} now={currentTime}/>
         <TimerContainer 
-          time={{timerMins, timerSecs, startTimerFlag}}
+          time={{timerMins, timerSecs, startTimerFlag, timerMsg}}
           changeTimer={this.changeTimer}
           startTimer={this.startTimer}
           pauseTimer={this.pauseTimer}
           resetTimer={this.resetTimer}
         />
         <br />
-
-        {/* <Timer time={{timerMins, timerSecs, startTimerFlag}}/> */}
-
-        {/* <Button onClick={this.changeTimer} value="+Mins">
-            Add minutes
-        </Button>
-        <Button onClick={this.changeTimer} value="-Mins">
-            Decrease minutes
-        </Button>
-        <Button onClick={this.changeTimer} value="+Secs">
-            Add seconds
-        </Button>
-        <Button onClick={this.changeTimer} value="-Secs">
-            Decrease seconds
-        </Button>
-        <Button onClick={this.startTimer}>
-            Start Timer
-        </Button>
-        <Button onClick={this.pauseTimer}>
-            Pause Timer
-        </Button>
-        <Button onClick={this.resetTimer}>
-            Reset Timer
-        </Button> */}
         <br />
-        <br />
-        <Stopwatch />
+        <StopwatchContainer 
+          changeSW={this.changeTimer}
+          startSW={this.startTimer}
+        />
       </div>
     );
   }

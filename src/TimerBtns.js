@@ -7,16 +7,12 @@ const TimerBtns = (props)=> {
     return (
         <div>
             <Button onClick={changeTimer} value="+Mins">
-                Add minutes
             </Button>
             <Button onClick={changeTimer} value="-Mins">
-                Decrease minutes
             </Button>
             <Button onClick={changeTimer} value="+Secs">
-                Add seconds
             </Button>
             <Button onClick={changeTimer} value="-Secs">
-                Decrease seconds
             </Button>
             <Button onClick={startTimer}>
                 Start Timer
