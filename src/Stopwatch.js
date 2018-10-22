@@ -3,9 +3,10 @@ import Button from './Button';
 
 class Stopwatch extends Component {
     render() {
+        const {swMins, swSecs, swMs, startedSWFlag} = this.props.stopwatch;
         return (
             <div>
-                SW Display
+                {swMins}:{swSecs}:{swMs}
             </div>
         )
     }

@@ -15,7 +15,7 @@ class Clock extends Component {
   // }
 
     return (
-      <div>
+      <div className="clock">
         <h3>Current time: {timeDisplay}</h3>
       </div>
     );

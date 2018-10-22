@@ -4,12 +4,13 @@ import TimerBtns from './TimerBtns';
 
 const TimerContainer = (props)=> {
 
-    const {timerMins, timerSecs, startTimerFlag} = props.time;
+    const {timerMins, timerSecs, startTimerFlag, timerMsg} = props.time;
     const {changeTimer, startTimer, pauseTimer, resetTimer} = props;
 
    return (
-        <div>
-            <Timer time={{timerMins, timerSecs, startTimerFlag}}/>
+        <div className="timer-container" >
+            <h3>Timer:</h3> 
+            <Timer time={{timerMins, timerSecs, startTimerFlag, timerMsg}}/>
             <TimerBtns 
                 changeTimer={changeTimer}
                 startTimer={startTimer}

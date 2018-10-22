@@ -3,15 +3,15 @@ import Button from './Button';
 
 const StopwatchBtns = (props)=> {
 
-    const {startSW, changeSW} = props;
+    const {startSW, pauseSW, resetSW} = props;
     
     return (
         <div>
-            <Button onClick={changeSW} value="Start">
+            <Button onClick={startSW} value="Start">
             </Button>
-            <Button onClick={changeSW} value="Stop">
+            <Button onClick={pauseSW} value="Stop">
             </Button>
-            <Button onClick={changeSW} value="Reset">
+            <Button onClick={resetSW} value="Reset">
             </Button>
         </div>
     );
