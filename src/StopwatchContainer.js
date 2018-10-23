@@ -5,8 +5,8 @@ import StopwatchBtns from './StopwatchBtns';
 
 class StopwatchContainer extends Component {
     render() {
-        const {swMins, swSecs, swMs, startedSWFlag} = this.props.stopwatch;
-        const {resetSW, pauseSW, startSW} = this.props;
+        const {swMins, swSecs, swMs, startedSWFlag, pausedSWFlag} = this.props.stopwatch;
+        const {resetSW, pauseSW, resumeSW, startSW} = this.props;
 
         return (
             <div className="sw-container">
@@ -16,6 +16,8 @@ class StopwatchContainer extends Component {
                     startSW={startSW}
                     pauseSW={pauseSW}
                     resetSW={resetSW}
+                    resumeSW={resumeSW}
+                    status={{startedSWFlag, pausedSWFlag}}
                 />
             </div>
         )

@@ -27,10 +27,14 @@ class App extends Component {
       startedSWFlag: false,
       pausedSWFlag: false,
       swStart: null,
-      swTimeStamp: null,
-      stampHolder: null,
-      start: 0,
-      test: 0
+      swStartTime: null,
+      starter: 0,
+      currentMs: 0,
+      currentSecs: 0,
+      currentMins: 0,
+      cMsShow: '00',
+      cSecShow: '00',
+      cMinShow: '00',
     }
     this.getTime = this.getTime.bind(this);
     this.changeTimer = this.changeTimer.bind(this);
@@ -39,9 +43,10 @@ class App extends Component {
     this.startTimer = this.startTimer.bind(this);
     // this.decreaseSecs = this.decreaseSecs.bind(this);
     this.resetTimer = this.resetTimer.bind(this);
+    this.testStart = this.testStart.bind(this);
   }
 
-  //start interval to show time each second
+  //er interval to show time each second
   componentDidMount() {
     // this.setState({
     //   loading: false
@@ -49,14 +54,12 @@ class App extends Component {
     this.timer = setInterval(this.getTime, 1000);
   }
 
-  
-
   //clear timer when component unmounts
   componentWillUnmount() {
     clearInterval(this.timer);
   }
 
-  //get current time, change state
+  //get currentMs time, change state
   //change loading to false once time is obtained
   getTime() {
     const time = new Date().toLocaleTimeString();
@@ -140,7 +143,7 @@ class App extends Component {
   }
 
   startTimer() {
-    console.log('hit start timer');
+    console.log('hit er timer');
     const {startTimerFlag, timerMins, timerSecs} = this.state;
      //if timer isn't started and timer is at 0, tell them to add time before starting
     if(!startTimerFlag && timerMins === '00' && timerSecs === '00') {
@@ -176,14 +179,17 @@ class App extends Component {
       timerMsg: ''
     });
   }
+//  ************************************************************************************ 
+////////////////////////////////////STOPWATCH FUNCTIONS/////////////////////////////////////
+//  ************************************************************************************ 
 
-  stopwatchCount = ()=> {
+  stopwatchDisplay = ()=> {
     // console.log('hit stopwatch countdown');
     // const {startedSWFlag, swMins, swSecs, swMs} = this.state;
-    let {swStart, swTimeStamp, startedSWFlag, pausedSWFlag} = this.state;
+    let {swStart, swStartTime, startedSWFlag, pausedSWFlag} = this.state;
     let currentDate = new Date();
     let currentTimeStamp = currentDate.getTime();
-    let ms = currentTimeStamp - swTimeStamp;
+    let ms = currentTimeStamp - swStartTime;
     let msDisplay = this.formatMs(ms);
     let secs = (ms - ms%1000)/1000; //ex: 8547 ms - 547 ms = 8000, then 8000/1000 = 8secs
     let secsDisplay = this.formatSWTime(secs);
@@ -194,7 +200,6 @@ class App extends Component {
       swSecs: secsDisplay,
       swMs: msDisplay,
       startedSWFlag: true,
-      stampHolder: (new Date()).getTime()
     });
     // console.log(`mins: ${minsDisplay} secs: ${secsDisplay} ms: ${msDisplay}`);
   }
@@ -202,55 +207,68 @@ class App extends Component {
   calcSWStart = ()=> {
     this.setState({
       swStart: new Date(),
-      swTimeStamp: (new Date()).getTime()
+      swStartTime: (new Date()).getTime()
     });
   }
 
-  changeStampToHumanReadable = ()=> {
-    let {swStart, swTimeStamp} = this.state;
-    if(swStart) {
-      console.log('human readable: ', swStart.toLocaleTimeString());
-    } else {
-      console.log('swStart is null');
-    }
+  //starter is right now; currentMs is either 0 or paused state of currentMs
+  setSWValues =()=> {
+    // let cMsecs = this.state.currentMs;
+    // let cSecs = (cMsecs - cMsecs%1000)/1000;
+    // console.log('cMsecs and type: ', +cMsecs, typeof cMsecs);
+    // console.log('cSecs and type: ', cSecs, typeof cSecs);
+    this.setState({
+      starter: (new Date()).getTime() - this.state.currentMs, //now - 0 or now - paused
+      currentMs: this.state.currentMs,
+      // currentSecs: cSecs,
+      currentSecs: (this.state.currentMs - (this.state.currentMs%1000))/1000,
+      currentMins: (this.state.currentSecs - this.state.currentSecs%60)/60
+    });
+  }
+
+  //get starting state values, set up setInterval
+  testStart() {
+    console.log('hit test start');
+    this.setSWValues();
+    console.log('initialSWVals: ', this.state.currentMs, this.state.currentSecs);
+    console.log('types: ', typeof this.state.currentMs, typeof this.state.currentSecs);
+    this.startTest = setInterval(()=> this.setState({
+      currentMs: (new Date()).getTime() - this.state.starter,
+      currentSecs: (this.state.currentMs - (this.state.currentMs%1000))/1000,
+      currentMins: (this.state.currentSecs - this.state.currentSecs%60)/60,
+      cMsShow: this.formatMs(this.state.currentMs),
+      cSecShow: this.formatSWTime(this.state.currentSecs),
+      cMinShow: this.formatSWTime(this.state.currentMins)
+    }), 1);
   }
 
   startSW = ()=> {
     const {startedSWFlag, pausedSWFlag} = this.state;
+
     //if not yet started, then calculate a starting point
     if(!startedSWFlag) {
-      console.log('hit start SW new');
+      console.log('hit er SW new');
       this.calcSWStart();
-      this.setState({test: new Date() - this.state.start});
-      this.startStopwatch = setInterval(this.stopwatchCount,1);
+      this.testStart();
+      this.startStopwatch = setInterval(this.stopwatchDisplay,1);
     }
     //if resuming from pause, use paused timestamp for count
     else if(pausedSWFlag) {
-      // this.calcSWStart();
-      console.log('resuming from pause, timestamp is', this.state.swTimeStamp);
-      this.startStopwatch = setInterval(this.stopwatchCount,1);
+      console.log('resuming from pause, timestamp is', this.state.swStartTime);
+      this.testStart();
+      this.startStopwatch = setInterval(this.stopwatchDisplay,1);
     }
   }
 
   pauseSW = ()=> {
     console.log('hit pauseSW');
-    //store the timestamp at stopping point
-    this.changeStampToHumanReadable();
-  
+    //stop the running SW
+    clearInterval(this.startTest);
+    clearInterval(this.startStopwatch);
     //change paused flag
     this.setState({
       pausedSWFlag: true, 
     });
-    //stop the running SW
-    clearInterval(this.startStopwatch);
-  }
-
-  getResumeSWTime = ()=> {
-    console.log('called getResumeSWTime');
-    //add paused times to state
-    // this.setState({
-    //   ms: 
-    // });
   }
 
   resetSW = ()=> {
@@ -262,7 +280,8 @@ class App extends Component {
       swMins: '00',
       swSecs: '00',
       swMs: '00',
-      startedSWFlag: false
+      startedSWFlag: false,
+      pausedSWFlag: false,
     });
   }
 
@@ -315,7 +334,8 @@ class App extends Component {
       swMins, 
       swSecs, 
       swMs, 
-      startedSWFlag
+      startedSWFlag,
+      pausedSWFlag,
     } = this.state;
 
     return (
@@ -334,7 +354,7 @@ class App extends Component {
         <br />
         <br />
         <StopwatchContainer 
-          stopwatch={{swMins, swSecs, swMs, startedSWFlag}} 
+          stopwatch={{swMins, swSecs, swMs, startedSWFlag, pausedSWFlag}} 
           pauseSW={this.pauseSW}
           resetSW={this.resetSW}
           startSW={this.startSW}
