@@ -4,23 +4,21 @@ import React, {Component} from 'react';
 class Timer extends Component {
 
   render() {
-    const {timerMins, timerSecs, startTimerFlag, timerMsg} = this.props.time;
+    const {timerMins, timerSecs, startTimerFlag} = this.props.time;
    
     //if timer has started and hit 0, show msg
     let msg;
-    // msg = (startTimerFlag && timerMins ==='00' && timerSecs === '00') ? <h3>Time's up!</h3> : timerMsg;
-    if(!startTimerFlag && timerMins === '00' && timerSecs === '00') {
-      msg = <h3>{timerMsg}</h3>;
-    } else if(startTimerFlag && timerMins ==='00' && timerSecs === '00') {
-      msg = <h3>Time's up!</h3>;
-    }
+    
+    msg = (startTimerFlag && timerMins ==='00' && timerSecs === '00') ? 
+      <h3 class="timer-msg">Time's up!</h3> : 
+      null
+    ;
 
-    let timerDisplay = <div>{timerMins}:{timerSecs}</div>;
+    let timerDisplay = <span>{timerMins}:{timerSecs}</span>;
 
     return (
       <div>
-        Countdown from:
-        {timerDisplay}
+        <h3>Timer: {timerDisplay}</h3> 
         {msg}
       </div>
     );

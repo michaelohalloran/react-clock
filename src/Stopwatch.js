@@ -1,12 +1,12 @@
 import React, {Component} from 'react';
-import Button from './Button';
 
 class Stopwatch extends Component {
     render() {
-        const {swMins, swSecs, swMs, startedSWFlag} = this.props.stopwatch;
+        const {swMsDisplay,swSecsDisplay,swMinsDisplay} = this.props.stopwatch;
         return (
             <div>
-                {swMins}:{swSecs}:{swMs}
+                <h3>Stopwatch:</h3>
+                {swMinsDisplay}:{swSecsDisplay}:{swMsDisplay}
             </div>
         )
     }

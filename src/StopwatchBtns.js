@@ -3,23 +3,25 @@ import Button from './Button';
 
 const StopwatchBtns = (props)=> {
 
-    const {startSW, pauseSW, resetSW, resumeSW} = props;
+    const {handleStartStopwatch, handlePauseStopwatch, handleResetStopwatch} = props;
     const {startedSWFlag, pausedSWFlag} = props.status;
 
-    // //only show resumeBtn if sw has been paused
-    // const resumeBtn = pausedSWFlag ? <Button onClick={resumeSW} value="Resume"/>: null;
-    const otherBtns = startedSWFlag ? (
-        <span>
-            <Button onClick={pauseSW} value="Pause"/>
-            <Button onClick={resetSW} value="Reset"/>
-        </span>
-    ): null;
+    //only show pause if sw has been started and paused
+    const pauseBtn = startedSWFlag && !pausedSWFlag? <Button onClick={handlePauseStopwatch} value="Pause"/> : null; 
+    //only show reset if sw has been started
+    const resetBtn = startedSWFlag ? <Button onClick={handleResetStopwatch} value="Reset"/> : null;
+    // const resetBtn = startedSWFlag ? (
+    //     <span>
+    //         <Button onClick={pauseSW} value="Pause"/>
+    //         <Button onClick={resetSW} value="Reset"/>
+    //     </span>
+    // ): null;
 
     return (
         <div>
-            <Button onClick={startSW} value="Start"/>
-            {/* {resumeBtn} */}
-            {otherBtns}
+            <Button onClick={handleStartStopwatch} value="Start"/>
+            {pauseBtn}
+            {resetBtn}
         </div>
     );
 }

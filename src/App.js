@@ -1,56 +1,39 @@
 import React, { Component } from 'react';
 import './App.css';
 import Clock from './Clock';
-import Timer from './Timer';
 import TimerContainer from './TimerContainer';
-import Button from './Button';
-import Stopwatch from './Stopwatch';
 import StopwatchContainer from './StopwatchContainer';
-
-
 
 class App extends Component {
 
   constructor() {
     super();
-    // let now = new Date().toLocaleTimeString();
     this.state = {
       currentTime: 0,
       loading: true,
       timerMins: '00',
       timerSecs: '00',
       startTimerFlag: false,
-      timerMsg: '',
-      swMins: '00',
-      swSecs: '00',
-      swMs: '00',
       startedSWFlag: false,
       pausedSWFlag: false,
-      swStart: null,
-      swStartTime: null,
-      starter: 0,
-      currentMs: 0,
-      currentSecs: 0,
-      currentMins: 0,
-      cMsShow: '00',
-      cSecShow: '00',
-      cMinShow: '00',
+      startingSWBaseTime: 0,
+      stopwatchwMs: 0,
+      stopwatchSecs: 0,
+      stopwatchMins: 0,
+      swMsDisplay: '00',
+      swSecsDisplay: '00',
+      swMinsDisplay: '00',
     }
     this.getTime = this.getTime.bind(this);
     this.changeTimer = this.changeTimer.bind(this);
-    this.formatTime = this.formatTime.bind(this);
+    this.formatTimerTime = this.formatTimerTime.bind(this);
     this.countdown = this.countdown.bind(this);
     this.startTimer = this.startTimer.bind(this);
-    // this.decreaseSecs = this.decreaseSecs.bind(this);
     this.resetTimer = this.resetTimer.bind(this);
-    this.testStart = this.testStart.bind(this);
   }
 
-  //er interval to show time each second
+  //setInterval to show current time each second
   componentDidMount() {
-    // this.setState({
-    //   loading: false
-    // });
     this.timer = setInterval(this.getTime, 1000);
   }
 
@@ -59,7 +42,6 @@ class App extends Component {
     clearInterval(this.timer);
   }
 
-  //get currentMs time, change state
   //change loading to false once time is obtained
   getTime() {
     const time = new Date().toLocaleTimeString();
@@ -71,38 +53,34 @@ class App extends Component {
 
   //take in a time 0 or more, format with leading 0's
   //disallows negative time by sticking at 00 if decrementing from 00
-  formatTime(preTime) {
+  formatTimerTime(preTime) {
     return preTime >=0 && preTime <=59 ? preTime < 10 ? `0${preTime}` : preTime : `00`;
   }  
 
   //Grabs button value and adds or subtracts mins/secs based on value
   changeTimer(e) {
-    // console.log('inside changeTimer : ', e.target.value);
-    // e.target.value == '+Mins' ? this.setState({timerMins: 3}) : console.log('null');
     switch(e.target.value) {
       case '+Mins':
         this.setState((prevState)=> {
           //change timerMins to number before incrementing, format it correctly
-          return {timerMins: this.formatTime(+prevState.timerMins+1)}
+          return {timerMins: this.formatTimerTime(+prevState.timerMins+1)}
         });
-        // console.log(e.target.value);
         break;
       case '-Mins':
         this.setState((prevState)=> {
-          return {timerMins: this.formatTime(+prevState.timerMins-1)}
+          return {timerMins: this.formatTimerTime(+prevState.timerMins-1)}
         });
         break;
       case '+Secs':
         this.setState((prevState)=> {
           //if at 59, add to mins also
           if(prevState.timerSecs === '59') {
-            // console.log(`At secs 59, state is ${typeof prevState.timerSecs}`);
             return {
-              timerMins: this.formatTime(+prevState.timerMins + 1),
-              timerSecs: this.formatTime(+prevState.timerSecs+1)
+              timerMins: this.formatTimerTime(+prevState.timerMins + 1),
+              timerSecs: this.formatTimerTime(+prevState.timerSecs+1)
             }
           } else {
-            return {timerSecs: this.formatTime(+prevState.timerSecs + 1)}
+            return {timerSecs: this.formatTimerTime(+prevState.timerSecs + 1)}
           } 
         });
         break;
@@ -112,10 +90,10 @@ class App extends Component {
           if(prevState.timerSecs === '00' && prevState.timerMins !== '00') {
               return {
                 timerSecs: '59',
-                timerMins: this.formatTime(+prevState.timerMins - 1)
+                timerMins: this.formatTimerTime(+prevState.timerMins - 1)
               }
           } else {
-              return {timerSecs: this.formatTime(+prevState.timerSecs-1)}
+              return {timerSecs: this.formatTimerTime(+prevState.timerSecs-1)}
           }
         });
         break;
@@ -130,12 +108,12 @@ class App extends Component {
         //if secs aren't at 0, decrement them
         if(prevState.timerSecs !== '00') {
           return {
-            timerSecs: this.formatTime(+prevState.timerSecs - 1),
+            timerSecs: this.formatTimerTime(+prevState.timerSecs - 1),
           }
         } else if (prevState.timerSecs === '00' && prevState.timerMins !== '00') {
           //if timerSecs are at 00 but mins remain, mins go down 1 and secs go down to 59
           return {
-            timerMins: this.formatTime(+prevState.timerMins - 1),
+            timerMins: this.formatTimerTime(+prevState.timerMins - 1),
             timerSecs: '59'
           }
         }
@@ -143,7 +121,6 @@ class App extends Component {
   }
 
   startTimer() {
-    console.log('hit er timer');
     const {startTimerFlag, timerMins, timerSecs} = this.state;
      //if timer isn't started and timer is at 0, tell them to add time before starting
     if(!startTimerFlag && timerMins === '00' && timerSecs === '00') {
@@ -156,22 +133,14 @@ class App extends Component {
     } 
   }
 
-  //clears the setInterval
-  stopCountdown = ()=> {
-    clearInterval(this.decreaseSecs);
-  }
-
-
-  //responds to pause btn press
+  //responds to pause btn press by clearing setInterval
   pauseTimer = ()=> {
-    console.log('hit pause');
-    this.stopCountdown();
+    clearInterval(this.decreaseSecs);
   }
 
   //stops count and resets state values
   resetTimer() {
-    console.log('hit reset');
-    this.stopCountdown();
+    this.pauseTimer();
     this.setState({
       timerSecs: '00',
       timerMins: '00',
@@ -183,103 +152,66 @@ class App extends Component {
 ////////////////////////////////////STOPWATCH FUNCTIONS/////////////////////////////////////
 //  ************************************************************************************ 
 
-  stopwatchDisplay = ()=> {
-    // console.log('hit stopwatch countdown');
-    // const {startedSWFlag, swMins, swSecs, swMs} = this.state;
-    let {swStart, swStartTime, startedSWFlag, pausedSWFlag} = this.state;
-    let currentDate = new Date();
-    let currentTimeStamp = currentDate.getTime();
-    let ms = currentTimeStamp - swStartTime;
-    let msDisplay = this.formatMs(ms);
-    let secs = (ms - ms%1000)/1000; //ex: 8547 ms - 547 ms = 8000, then 8000/1000 = 8secs
-    let secsDisplay = this.formatSWTime(secs);
-    let mins = (secs - secs%60)/60; //ex: 127 secs - 7 secs = 120 secs, then 120/60 = 2 mins
-    let minsDisplay = this.formatSWTime(mins);
-    this.setState({
-      swMins: minsDisplay,
-      swSecs: secsDisplay,
-      swMs: msDisplay,
-      startedSWFlag: true,
-    });
-    // console.log(`mins: ${minsDisplay} secs: ${secsDisplay} ms: ${msDisplay}`);
-  }
-
-  calcSWStart = ()=> {
-    this.setState({
-      swStart: new Date(),
-      swStartTime: (new Date()).getTime()
-    });
-  }
-
-  //starter is right now; currentMs is either 0 or paused state of currentMs
+  //startingBaseTime is now (when function runs); stopwatchwMs is either 0 or paused state of stopwatchwMs
   setSWValues =()=> {
-    // let cMsecs = this.state.currentMs;
-    // let cSecs = (cMsecs - cMsecs%1000)/1000;
-    // console.log('cMsecs and type: ', +cMsecs, typeof cMsecs);
-    // console.log('cSecs and type: ', cSecs, typeof cSecs);
     this.setState({
-      starter: (new Date()).getTime() - this.state.currentMs, //now - 0 or now - paused
-      currentMs: this.state.currentMs,
-      // currentSecs: cSecs,
-      currentSecs: (this.state.currentMs - (this.state.currentMs%1000))/1000,
-      currentMins: (this.state.currentSecs - this.state.currentSecs%60)/60
+      startingSWBaseTime: (new Date()).getTime() - this.state.stopwatchwMs, //now - 0 or now - paused
+      stopwatchwMs: this.state.stopwatchwMs,
+      stopwatchSecs: (this.state.stopwatchwMs - (this.state.stopwatchwMs%1000))/1000, //ex: 8547 ms - 547 ms = 8000, then 8000/1000 = 8secs
+      stopwatchMins: (this.state.stopwatchSecs - this.state.stopwatchSecs%60)/60 //ex: 127 secs - 7 secs = 120 secs, then 120/60 = 2 mins
     });
   }
 
   //get starting state values, set up setInterval
-  testStart() {
-    console.log('hit test start');
+  updateRunningSWDisplay = ()=> {
     this.setSWValues();
-    console.log('initialSWVals: ', this.state.currentMs, this.state.currentSecs);
-    console.log('types: ', typeof this.state.currentMs, typeof this.state.currentSecs);
-    this.startTest = setInterval(()=> this.setState({
-      currentMs: (new Date()).getTime() - this.state.starter,
-      currentSecs: (this.state.currentMs - (this.state.currentMs%1000))/1000,
-      currentMins: (this.state.currentSecs - this.state.currentSecs%60)/60,
-      cMsShow: this.formatMs(this.state.currentMs),
-      cSecShow: this.formatSWTime(this.state.currentSecs),
-      cMinShow: this.formatSWTime(this.state.currentMins)
+    this.startSWatch = setInterval(()=> this.setState({
+      stopwatchwMs: (new Date()).getTime() - this.state.startingSWBaseTime,
+      stopwatchSecs: (this.state.stopwatchwMs - (this.state.stopwatchwMs%1000))/1000,
+      stopwatchMins: (this.state.stopwatchSecs - this.state.stopwatchSecs%60)/60,
+      swMsDisplay: this.formatMs(this.state.stopwatchwMs),
+      swSecsDisplay: this.formatSWTime(this.state.stopwatchSecs),
+      swMinsDisplay: this.formatSWTime(this.state.stopwatchMins)
     }), 1);
   }
 
-  startSW = ()=> {
+  handleStartStopwatch = ()=> {
     const {startedSWFlag, pausedSWFlag} = this.state;
-
-    //if not yet started, then calculate a starting point
+    //if not yet started, then set flag to true
     if(!startedSWFlag) {
-      console.log('hit er SW new');
-      this.calcSWStart();
-      this.testStart();
-      this.startStopwatch = setInterval(this.stopwatchDisplay,1);
+      this.setState({startedSWFlag: true});
     }
-    //if resuming from pause, use paused timestamp for count
+    //if resuming from pause, change paused flag
     else if(pausedSWFlag) {
-      console.log('resuming from pause, timestamp is', this.state.swStartTime);
-      this.testStart();
-      this.startStopwatch = setInterval(this.stopwatchDisplay,1);
+      this.setState({pausedSWFlag: false});
     }
+    this.updateRunningSWDisplay();
   }
 
-  pauseSW = ()=> {
-    console.log('hit pauseSW');
+  handlePauseStopwatch = ()=> {
     //stop the running SW
-    clearInterval(this.startTest);
-    clearInterval(this.startStopwatch);
+    clearInterval(this.startSWatch);
+    // clearInterval(this.handleStartStopwatch);
     //change paused flag
     this.setState({
       pausedSWFlag: true, 
     });
   }
 
-  resetSW = ()=> {
-    console.log('hit resetSW');
+  handleResetStopwatch = ()=> {
     //pause the stopwatch
-    this.pauseSW();
+    this.handlePauseStopwatch();
     //reset the display and reset flag to false
     this.setState({
       swMins: '00',
       swSecs: '00',
       swMs: '00',
+      stopwatchwMs: 0,
+      stopwatchSecs: 0,
+      stopwatchMins: 0,
+      swMsDisplay: '00',
+      swSecsDisplay: '00',
+      swMinsDisplay: '00',
       startedSWFlag: false,
       pausedSWFlag: false,
     });
@@ -331,11 +263,11 @@ class App extends Component {
       timerSecs, 
       startTimerFlag, 
       timerMsg,
-      swMins, 
-      swSecs, 
-      swMs, 
       startedSWFlag,
       pausedSWFlag,
+      swMsDisplay,
+      swSecsDisplay,
+      swMinsDisplay
     } = this.state;
 
     return (
@@ -354,10 +286,10 @@ class App extends Component {
         <br />
         <br />
         <StopwatchContainer 
-          stopwatch={{swMins, swSecs, swMs, startedSWFlag, pausedSWFlag}} 
-          pauseSW={this.pauseSW}
-          resetSW={this.resetSW}
-          startSW={this.startSW}
+          stopwatch={{swMsDisplay,swSecsDisplay,swMinsDisplay, startedSWFlag, pausedSWFlag}} 
+          handlePauseStopwatch={this.handlePauseStopwatch}
+          handleResetStopwatch={this.handleResetStopwatch}
+          handleStartStopwatch={this.handleStartStopwatch}
         />
       </div>
     );
